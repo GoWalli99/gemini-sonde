@@ -4,32 +4,31 @@ function App() {
   const [antwort, setAntwort] = useState('')
 
   const fragGemini = async () => {
-    // Wir nutzen hier direkt Ihren funktionierenden Key aus dem AI Studio
+    // Ihr bewährter Key vom AI Studio
     const apiKey = "AIzaSyALbTPV6ywZaAhcuXS75DPaSOnX0OOjbHM";
     
     setAntwort('Ich frage nach...')
     
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+      // Änderung: Wir nutzen /v1/ statt /v1beta/ für maximale Stabilität
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: "Sag kurz Hallo!" }] }] })
       })
 
-      // Falls Google einen Fehler (wie 404) meldet, fangen wir das hier sauber ab
       if (!response.ok) {
         const errorData = await response.json();
-        setAntwort(`Google-Fehler (${response.status}): ${errorData.error?.message || 'Unbekannter Fehler'}`);
+        setAntwort(`Google-Fehler (${response.status}): ${errorData.error?.message || 'Modell-Konflikt'}`);
         return;
       }
 
       const data = await response.json()
       
-      // Wir prüfen, ob die Antwort von Google die erwartete Struktur hat
       if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
         setAntwort(data.candidates[0].content.parts[0].text)
       } else {
-        setAntwort('Antwort erhalten, aber Format ist unerwartet.')
+        setAntwort('Antwort erhalten, aber kein Text gefunden.')
       }
       
     } catch (e) {
@@ -40,10 +39,10 @@ function App() {
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>Gemini Test-Sonde</h1>
-      <p>Status: Verbindung zum AI Studio Key wird geprüft...</p>
+      <p>Status: Teste stabile API-Version (v1)...</p>
       <button 
         onClick={fragGemini} 
-        style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}
+        style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px' }}
       >
         Frag Gemini!
       </button>
